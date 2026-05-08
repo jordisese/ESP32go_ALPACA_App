@@ -1,0 +1,33 @@
+title = "Alpaca ESP32 Telescope driver"
+
+[esp32go]
+ip_address = "192.168.1.21"
+port = 10001
+serial_port = "/dev/cu-usb00001"
+serial_speed = 115200
+connection_type = 1
+auto_connect = 1
+
+[alpaca]
+discovery = 1
+server = 1
+
+[network]
+ip_address = ""
+port = 5555
+
+[server]
+location = "Anywhere on Earth"
+verbose_driver_exceptions = true
+
+[device]
+can_reverse = true
+step_size = 1.0
+steps_per_sec = 6
+sync_write_connected = true
+
+[logging]
+log_level = "INFO"
+log_to_stdout = false
+max_size_mb = 5
+num_keep_logs = 10
