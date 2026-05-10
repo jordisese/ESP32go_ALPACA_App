@@ -87,6 +87,7 @@ from shr import set_shr_logger
 # FOR EACH ASCOM DEVICE TYPE #
 ##############################
 import telescope
+#import alpaca_empty_telescope as telescope
 #import focuser
 #import rotator
 

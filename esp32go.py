@@ -15,7 +15,13 @@ else:
     from tkinter import Button
     from tkinter import Radiobutton
 
+#-------------------------------
+import threading
+from threading import Thread     
+#-------------------------------
+
 import time
+import datetime
 
 import tcpsocket
 
@@ -30,90 +36,12 @@ import globals
 from config import Config
 import config
 
-#root = Tk()
+#import esp32go
+from esp32go_driver import esp32go_driver
+
 root = globals.root
-#----------------
-#global variables
-#----------------
-#global az_position
-#az_position=tk.StringVar() 
-#global alt_position
-#alt_position=tk.StringVar()
-#global ra_position
-#ra_position=tk.StringVar()
-#global dec_position
-#dec_position=tk.StringVar()
-#global speed_value
-#speed_value=tk.StringVar()
-#global track_value
-#track_value=tk.StringVar()
-#global localtime_value
-#localtime_value=tk.StringVar()
-#global utctime_value
-#utctime_value=tk.StringVar()
-#global sideraltime_value
-#sideraltime_value=tk.StringVar()
-#----------------
 
-# --------- COMMANDS
-def sendCommand(cmd):
-    #print(cmd)
-    globals.blindCommandQueue.append(cmd)
-
-# ---------- END COMMANDS
-
-
-# --------- BUTTONS
-def speed_cmd():
-    speed=globals.speed_value.get()
-    match speed:
-        case '0': #guide
-            return ":RG#"
-        case '1': #slew
-            return ":RS#"
-        case '2': #find
-            return ":RM#"
-        case '3': #center
-            return ":RC#" 
-    # just in case        
-    return ":RF#"
-
-def on_press_N(context):
-    sendCommand(speed_cmd()+":Mn#")
-def on_press_S(context):
-    sendCommand(speed_cmd()+":Ms#")
-def on_press_E(context):
-    sendCommand(speed_cmd()+":Me#")
-def on_press_W(context):
-    sendCommand(speed_cmd()+":Mw#")
-
-def on_release_N(context):
-    sendCommand(":Qn#")
-def on_release_S(context):
-    sendCommand(":Qs#")
-def on_release_E(context):
-    sendCommand(":Qe#")
-def on_release_W(context):
-    sendCommand(":Qw#")
-
-def stopCommand():
-    sendCommand(":Q#")
-
-def goHomeCommand():
-    sendCommand(":hP#")
-def resetHomeCommand():
-    sendCommand(":pH#")
-
-def setSideralCommand():
-    sendCommand(":TQ#")
-def setSolarCommand():
-    sendCommand(":TS#")
-def setLunarCommand():
-    sendCommand(":TL#")
-def setKingCommand():
-    sendCommand(":TK#")
-# --------- END BUTTONS
-
+esp32go = esp32go_driver()
 
 def create_scope_frame(container):
     frame = tk.Frame(container)
@@ -130,54 +58,32 @@ def create_scope_frame(container):
 
     button1_font = font.Font(family='Helvetica', size=14, weight='bold')
     button2_font = font.Font(family='Helvetica', size=14, weight='normal')
-
-    #but_NE = Button(frame0, text='NE', width=4, font=button1_font)
-    #but_NE.grid(column=0, row=2)
     
     but_N = Button(frame0, text='N', font=button1_font)
     but_N.grid(column=1, row=2)
-
-    #but_NW = Button(frame0, text='NW', width=4, font=button1_font)
-    #but_NW.grid(column=2, row=2)
-
-
-    #but_SE = Button(frame0, text='SE', width=4, font=button1_font)
-    #but_SE.grid(column=0, row=4)
     
     but_S = Button(frame0, text='S', font=button1_font)
     but_S.grid(column=1, row=4)
 
-    #but_SW = Button(frame0, text='SW', width=4, font=button1_font)
-    #but_SW.grid(column=2, row=4)
-
     but_E = Button(frame0, text='E', font=button1_font)
     but_E.grid(column=0, row=3)
 
-    but_ST = Button(frame0, text='Stop', command=stopCommand, font=button1_font)
+    but_ST = Button(frame0, text='Stop', command=lambda: esp32go.stop(dir=''), font=button1_font)
     but_ST.grid(column=1, row=3)
     
     but_W = Button(frame0, text='W', font=button1_font)
     but_W.grid(column=2, row=3)
 
-    but_N.bind("<ButtonPress>", on_press_N)
-    but_S.bind("<ButtonPress>", on_press_S)
-    but_E.bind("<ButtonPress>", on_press_E)
-    but_W.bind("<ButtonPress>", on_press_W)
-    but_N.bind("<ButtonRelease>", on_release_N)
-    but_S.bind("<ButtonRelease>", on_release_S)
-    but_E.bind("<ButtonRelease>", on_release_E)
-    but_W.bind("<ButtonRelease>", on_release_W)
+    but_N.bind("<ButtonPress>", lambda dir: esp32go.speed_move(dir='N'))
 
-
-
-#       self.button.bind("<ButtonPress>", self.on_press)
-#       self.button.bind("<ButtonRelease>", self.on_release)
-#   def on_press(self, event):
-#       self.log("button was pressed")
-#    def on_release(self, event):
-#        self.log("button was released")
-
-
+    #but_N.bind("<ButtonPress>", lambda dir: esp32go.speed_move(dir='N'))
+    but_S.bind("<ButtonPress>", lambda dir: esp32go.speed_move(dir='S'))
+    but_E.bind("<ButtonPress>", lambda dir: esp32go.speed_move(dir='E'))
+    but_W.bind("<ButtonPress>", lambda dir: esp32go.speed_move(dir='W'))
+    but_N.bind("<ButtonRelease>", lambda dir: esp32go.stop(dir='N'))
+    but_S.bind("<ButtonRelease>", lambda dir: esp32go.stop(dir='S'))
+    but_E.bind("<ButtonRelease>", lambda dir: esp32go.stop(dir='E'))
+    but_W.bind("<ButtonRelease>", lambda dir: esp32go.stop(dir='W'))
 
     frame1 = tk.LabelFrame(frame,width=30, text="Speed")
 
@@ -193,10 +99,10 @@ def create_scope_frame(container):
 
     frame2 = tk.LabelFrame(frame,width=30, text="Tracking mode")
 
-    tk_rad1 = Radiobutton(frame2,text='Sideral', command=setSideralCommand, variable=globals.track_value, value=1)
-    tk_rad3 = Radiobutton(frame2,text='Solar', command=setSolarCommand, variable=globals.track_value, value=2)
-    tk_rad2 = Radiobutton(frame2,text='Lunar', command=setLunarCommand, variable=globals.track_value, value=3)
-    tk_rad4 = Radiobutton(frame2,text='King', command=setKingCommand, variable=globals.track_value, value=4)
+    tk_rad1 = Radiobutton(frame2,text='Sideral', command= lambda :esp32go.setTrackingRate(rate=0), variable=globals.track_value, value=0)
+    tk_rad3 = Radiobutton(frame2,text='Solar', command= lambda :esp32go.setTrackingRate(rate=2), variable=globals.track_value, value=2)
+    tk_rad2 = Radiobutton(frame2,text='Lunar', command= lambda :esp32go.setTrackingRate(rate=1), variable=globals.track_value, value=1)
+    tk_rad4 = Radiobutton(frame2,text='King', command= lambda :esp32go.setTrackingRate(rate=3), variable=globals.track_value, value=3)
 
     tk_rad1.grid(column=0, row=9)
     tk_rad2.grid(column=1, row=9)
@@ -218,19 +124,15 @@ def create_scope_frame(container):
     lbl_disconnected.grid(column=0, row=0)
     lbl_connected = tk.Label(frame4, textvariable=globals.connected_status, font=globals.connect_status_font, fg='green')
     lbl_connected.grid(column=1, row=0)
-    but_connect = Button(frame4, textvariable=globals.connect_disconnect, command=tcp_connect, font=globals.connect_disconnect_font)
+    but_connect = Button(frame4, textvariable=globals.connect_disconnect, command=connect_disconnect, font=globals.connect_disconnect_font)
     but_connect.grid(column=2, row=0)    
 
     frame5 = tk.LabelFrame(frame,width=30, text="Homing")
 
-    but_gH = Button(frame5, text='Go&Park Home', command=goHomeCommand, font=button2_font)
+    but_gH = Button(frame5, text='Go&Park Home', command=lambda:esp32go.goHome(), font=button2_font)
     but_gH.grid(column=0, row=0)
-    but_rH = Button(frame5, text='Reset Home', command=resetHomeCommand, font=button2_font)
+    but_rH = Button(frame5, text='Reset Home', command=lambda:esp32go.resetHome(), font=button2_font)
     but_rH.grid(column=1, row=0)
- #   but_pk = Button(frame0, text='Park', command=parkCommand, font=button2_font)
- #   but_pk.grid(column=2, row=0)
-
-
 
     frame0.grid(column=0, row=0, sticky="nsew")
     frame5.grid(column=0, row=2, sticky="nsew")
@@ -269,10 +171,6 @@ def create_config_frame(container):
     tab_control.add(tab5, text='TMC/Aux')
     tab_control.add(tab6, text='Focus/Wheel')
 
-    #lbl1 = Label(tab1, text= 'Telescope', font=("Arial", 14))
-    #lbl1.grid(column=0, row=0)
-
-
     radec_font = font.Font(family='Helvetica', size=30, weight='bold')
     altaz_font = font.Font(family='Helvetica', size=30, weight='bold')
 
@@ -300,13 +198,11 @@ def create_config_frame(container):
 
 
 
-
+    # -------- TEMPORARY --------------
     lbl2 = Label(tab2, text= 'label2')
     lbl2.grid(column=0, row=0)
+    # -------- TEMPORARY --------------
     
-    #lbl3 = Label(tab3, text= 'label3')
-    #lbl3.grid(column=0, row=0)
-
     connection = tk.LabelFrame(tab3, text="Connection")
     tk_rad1 = Radiobutton(connection, text='TCP/IP', variable=globals.connType_value, value=1)
     tk_Address = tk.Entry(connection, textvariable=globals.connAddress_value)
@@ -338,17 +234,13 @@ def create_config_frame(container):
     but_saveConn = Button(tab3, text='Save',  command=saveConnInfo, font=button2_font)
     but_saveConn.grid(column=0, row=3, sticky=tk.NW)
 
-
+    # -------- TEMPORARY --------------
     lbl4 = Label(tab4, text= 'label4')
     lbl4.grid(column=0, row=0)
-    
+    # -------- TEMPORARY --------------
     
     
     tab_control.pack(expand=1, fill='both')
-
-    #globals.connType_value.set(1)
-    #globals.alpacaDiscovery.set(1)
-    #globals.alpacaServer.set(1)
 
     globals.connAddress_value.set(Config.esp32go_ip_address)
     globals.connPort_value.set(Config.esp32go_port)
@@ -361,28 +253,14 @@ def create_config_frame(container):
 
     return frame
 
-def tcp_connect():
+def connect_disconnect():
     if globals.connect_disconnect.get() == 'Disconnect' or globals.tcp_connected:
         globals.connect_disconnect.set('Connect')
-        tcp_disconnect()
+        esp32go.disconnect()
         return
-
-    globals.tcp_please_disconnect=False
-
-    # secondary threads
-    print('Starting thread')
-    #_TCP = tcpsocket.TCPconnection('192.168.1.21',10001)
-    #_TCP = tcpsocket.TCPconnection(Config.esp32go_ip_address,Config.esp32go_port)
-    try:
-        _TCP = tcpsocket.TCPconnection(Config.esp32go_ip_address,Config.esp32go_port)
-    except:
-        print("Exception connecting to ESP32go")
-    if globals.connection_error == True:
-        globals.connection_error = False
-        messagebox.showerror("Error", "Connection failed")
-
-def tcp_disconnect():
-    globals.tcp_please_disconnect=True #thread will exit ASAP
+    globals.connect_status.set('Connecting...')
+    root.update()
+    return esp32go.connect(blind=False)
 
 
 def fire_alpaca_discovery():
@@ -402,6 +280,105 @@ def fire_alpaca_server():
     _ALPACA = AlpacaServer(Config.ip_address, Config.port)
 
 
+def update_status():
+
+    if globals.comLock:
+        threading.Timer(globals.polling_seconds, update_status).start()
+        return
+
+    if esp32go.connected() and not globals.commandQueue and not globals.blindCommandQueue: #preference is given to queued commands
+        esp32go.flush()
+        response = esp32go.sendCommandWaitReply(":Gx#",50)
+        if response == None or len(response) < 45:
+            #print(response)
+            #esp32go.flush()
+            threading.Timer(globals.polling_seconds, update_status).start()
+            return
+        #print(response)
+        pos=response[:2]+'h'+response[3:5]+'m'+response[6:10]+'s'
+        globals.ra_position.set(pos)
+
+        pos=response[11:14]+'º'+response[15:17]+'\''+response[18:20]+'"'
+        globals.dec_position.set(pos)
+
+        if globals.is_altAz.get()=='1':
+            pos=response[21:24]+'º'+response[25:27]+'\''+response[28:30]+'"'
+            globals.az_position.set(pos)
+            pos=response[31:34]+'º'+response[35:37]+'\''+response[38:40]+'"'
+
+            globals.alt_position.set(pos)
+        #else:
+        #    print("EQ only")
+
+            #globals.az_position.set(response[21:29])
+            #globals.alt_position.set(response[31:39])
+
+
+        # extended status
+        dresponse = esp32go.sendCommandWaitReply(":GU#")
+        if dresponse == None or len(dresponse) < 4:
+            #print(dresponse)
+            #esp32go.flush()
+            threading.Timer(globals.polling_seconds, update_status).start()
+            return
+        if dresponse[0]=='T':
+            globals.is_tracking.set(1)
+            #print('tracking')
+        else:
+            globals.is_tracking.set(0)
+        #print('not tracking')
+        if dresponse[1]=='P':
+            globals.is_parked.set(1)
+        else:
+            globals.is_parked.set(0)
+        if dresponse[2]=='S':
+            globals.is_slewing.set(1)
+        else:
+            globals.is_slewing.set(0)
+        if dresponse[3]=='W':
+            globals.pierSideWest.set(1)
+        else:
+            globals.pierSideWest.set(0)
+        #globals.track_value.set(dresponse[4]) 
+        match dresponse[4]: # set to valid alpaca values
+            case '1': # sideral
+                globals.track_value.set(0)
+            case '2': # solar
+                globals.track_value.set(2)
+            case '3': # lunar
+                globals.track_value.set(1)
+            case '4': # king
+                globals.track_value.set(3)
+            case _: 
+                globals.track_value.set(0)
+                
+        # update local/utc time values
+        pcnow = datetime.datetime.now()
+        espdiff = float(globals.localtime_diff_value.get())
+        espnow = pcnow + datetime.timedelta(seconds=espdiff)
+        globals.localtime_value.set(espnow.strftime("%H:%M:%S"))
+        esputc = espnow.astimezone(datetime.timezone.utc)
+        utcval = esputc.strftime("%H:%M:%S")
+        #print(utcval)
+        globals.utctime_value.set(utcval)
+                
+        # sidereal time
+        #longitude_value = float(globals.longitude.get())
+        #rawvalue = globals.utctime_value.get()
+        #gra = int(rawvalue[0:1])
+        #mins = int(rawvalue[3:4])
+        #secs = int(rawvalue[6:7])
+        #utc_value = gra + mins/60 + secs/3600
+        #days_from2000 = 0
+        #lst = 100.46+(0.985647 * days_from2000)+ longitude_value + (15 * utc_value)
+        #print(lst)
+
+                
+
+
+    # schedule next execution
+    threading.Timer(globals.polling_seconds, update_status).start()
+
 def create_main_window():
 
     root.title("ESp32go")
@@ -409,12 +386,6 @@ def create_main_window():
         root.geometry('850x400')
     else:
         root.geometry('850x500')
-
-#    try:
-#        # windows only (remove the minimize/maximize button)
-#        root.attributes('-toolwindow', True)
-#    except TclError:
-#        print('Not supported on your platform')
 
     # layout on the root window
     root.columnconfigure(0, weight=4)
@@ -426,40 +397,29 @@ def create_main_window():
     config_frame = create_config_frame(root)
     config_frame.grid(column=1, row=0, sticky=tk.NW)
 
-    # default values
-    #global speed_value
-    #global track_value
-    #global ra_position
-    #global dec_position
-    #global az_position
-    #global alt_position
-    #global localtime_value
-    #global utctime_value
-    #global sideraltime_value
-
+    # ------ defaults
     globals.speed_value.set(2)
     globals.track_value.set(1)
     globals.ra_position.set('00h00m00.0s')
     globals.dec_position.set('+00º00\'00"')
-    globals.az_position.set('+000º00\'00"')
+    globals.az_position.set('000º00\'00"')
     globals.alt_position.set('+00º00\'00"')
-    globals.localtime_value.set('Local: 00:00:00')
-    globals.utctime_value.set('UTC: 00:00:00')
-    globals.sideraltime_value.set('Sid: 00:00:00')
+    globals.localtime_value.set('00:00:00')
+    globals.utctime_value.set('00:00:00')
+    globals.sideraltime_value.set('00:00:00')
 
     root.after(1, lambda: root.focus_force())
-
-    # secondary threads
-    #try:
-    #    _TCP = tcpsocket.TCPconnection('192.168.1.21',10001)
-    #except:
-    #    print("Exception connecting to ESP32go")
-
-    if globals.autoConnect.get()=='1':
-        tcp_connect()
+    root.update() # draw window
 
     fire_alpaca_discovery()
     fire_alpaca_server()
+
+    if globals.autoConnect.get()=='1':
+        globals.connect_status.set('Connecting...')
+        root.update()
+        esp32go.connect(blind=False)
+
+    threading.Timer(globals.polling_seconds, update_status).start()
 
     # main loop
     root.mainloop()

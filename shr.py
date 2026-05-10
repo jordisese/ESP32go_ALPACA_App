@@ -146,8 +146,14 @@ def get_request_field(name: str, req: Request, caseless: bool = False, default: 
 # logged messages are in the right order. Logs PUT body as well.
 #
 def log_request(req: Request):
-    return
+    #return
     msg = f'{req.remote_addr} -> {req.method} {req.path}'
+    #print(msg)
+    if req.method == 'PUT':
+        print(msg)
+        if req.content_length != 0:
+            print(f'{req.remote_addr} -> {req.media}')
+    return
     if req.query_string != '':
         msg += f'?{req.query_string}'
     logger.info(msg)

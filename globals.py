@@ -1,12 +1,15 @@
-#globals.py
 from tkinter import *
 import tkinter as tk
 from tkinter import font
 
 root = Tk()
+
 #----------------
 #global variables
 #----------------
+global comLock
+comLock = False
+
 global polling_seconds
 polling_seconds = 1
 
@@ -14,12 +17,19 @@ global blindCommandQueue
 blindCommandQueue=[]
 
 global commandQueue
-commandQueue=[]
+commandQueue={}
+global commandQueueBytes
+commandQueueBytes={}
+global responseQueue
+responseQueue={}
 
 global tcp_connected
 tcp_connected = False
 global tcp_please_disconnect
 tcp_please_disconnect = False
+global tcp_please_update_dateTime
+tcp_please_update_dateTime = False
+
 global connect_disconnect
 connect_disconnect=tk.StringVar() 
 global connect_disconnect_font
@@ -105,14 +115,26 @@ global ra_position
 ra_position=tk.StringVar()
 global dec_position
 dec_position=tk.StringVar()
+global ra_target
+ra_target=tk.StringVar()
+global dec_target
+dec_target=tk.StringVar()
 global speed_value
 speed_value=tk.StringVar()
 global track_value
 track_value=tk.StringVar()
+
+global date_value
+date_value=tk.StringVar()
 global localtime_value
 localtime_value=tk.StringVar()
 global utctime_value
 utctime_value=tk.StringVar()
+global utcdiff_value
+utcdiff_value=tk.StringVar()
 global sideraltime_value
 sideraltime_value=tk.StringVar()
+global localtime_diff_value
+localtime_diff_value=tk.StringVar()
+
 #----------------

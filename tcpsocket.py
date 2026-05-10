@@ -42,6 +42,7 @@ class TCPconnection(Thread):
         self.start()
 
     def thread_exit(self):
+        globals.comLock=False
         globals.tcp_connected=False
         globals.connect_disconnect.set('Connect')
         globals.connect_status.set('Disconnected')
@@ -56,7 +57,11 @@ class TCPconnection(Thread):
     def run(self):
         print("tcp thread RUN active")
         globals.blindCommandQueue = [] #empty queue just in case
-        self.getStatus() # will schedule itself every time (globals.polling_seconds)
+        globals.commandQueue = {} #empty queue just in case
+        globals.comLock=False
+
+        #self.getStatus() # will schedule itself every time (globals.polling_seconds)
+        #threading.Timer(globals.polling_seconds, self.getStatus).start()
         while True:
             if globals.tcp_please_disconnect:
                 print("Thread exit requested")
@@ -70,10 +75,10 @@ class TCPconnection(Thread):
                 print("RunException: Closing thread")
                 self.thread_exit()
                 return
-            #time.sleep(0.2)
 
     def getBasicData(self):
         try:
+            globals.comLock=True
             #ACK
             self.clientsocket.send(b'\x06')
             time.sleep(0.1)
@@ -90,6 +95,7 @@ class TCPconnection(Thread):
             self.clientsocket.send(b':cA#')
             time.sleep(0.1)
             bresponse=self.clientsocket.recv(512)
+            globals.comLock=False
             response=bresponse.decode('cp1252')
             #print(response)
             res = response.splitlines()
@@ -102,19 +108,20 @@ class TCPconnection(Thread):
             globals.alt_count.set(res[1])
 
             globals.az_guide_speed.set(res[2])
-            globals.alt_guide_speed.set(res[3])
-            globals.az_center_speed.set(res[4])
-            globals.alt_center_speed.set(res[5])
-            globals.az_find_speed.set(res[6])
-            globals.alt_find_speed.set(res[7])
-            globals.az_slew_speed.set(res[8])
+            globals.az_center_speed.set(res[3])
+            globals.az_find_speed.set(res[4])
+            globals.az_slew_speed.set(res[5])
+
+            globals.alt_guide_speed.set(res[6])
+            globals.alt_center_speed.set(res[7])
+            globals.alt_find_speed.set(res[8])
             globals.alt_slew_speed.set(res[9])
 
             globals.eqTrack.set(res[19])
 
 
         except TimeoutError:
-            print("Timeout reading status: disconnecting socket")
+            print("Timeout reading basic data: disconnecting socket")
             self.thread_exit()
             raise            
         except Exception as e:
@@ -125,116 +132,45 @@ class TCPconnection(Thread):
             self.thread_exit()
             raise
 
-    def getStatus(self):
-        if globals.tcp_please_disconnect:
-            return
-        
-        if not globals.commandQueue and not globals.blindCommandQueue: #preference is given to queued commands
-
-            try:
-                # RA/DEC
-                #self.clientsocket.sendall(b":GR#")
-                #time.sleep(0.1)
-                #bresponse=self.clientsocket.recv(11)
-                #response=bresponse.decode()
-                ##print(response)
-                #pos=response[:2]+'h'+response[3:5]+'m'+response[6:10]+'s'
-                ##print(pos)
-                #globals.ra_position.set(pos)
-
-                #self.clientsocket.sendall(b":GD#")
-                #time.sleep(0.1)
-                #bresponse=self.clientsocket.recv(11)
-                ##print(bresponse)
-                #response=bresponse.decode('cp1252')
-                #pos=response[:3]+'º'+response[4:6]+'\''+response[7:9]+'"'
-                ##print(pos)
-                #globals.dec_position.set(pos)
-
-                self.clientsocket.sendall(b":Gx#")
-                time.sleep(0.1)
-                bresponse=self.clientsocket.recv(50)
-                response=bresponse.decode('cp1252')
-                #print(response)
-
-                pos=response[:2]+'h'+response[3:5]+'m'+response[6:10]+'s'
-                #print(pos)
-                globals.ra_position.set(pos)
-
-                pos=response[11:14]+'º'+response[15:17]+'\''+response[18:20]+'"'
-                #print(pos)
-                globals.dec_position.set(pos)
-
-                if globals.is_altAz.get()=='1':
-                #if True:
-                    pos=response[21:24]+'º'+response[25:27]+'\''+response[28:30]+'"'
-                    #print(pos)
-                    globals.az_position.set(pos)
-                    pos=response[31:34]+'º'+response[35:37]+'\''+response[38:40]+'"'
-                    #print(pos)
-                    globals.alt_position.set(pos)
-                #else:
-                #    print("EQ only")
-
-                #globals.az_position.set(response[21:29])
-                #globals.alt_position.set(response[31:39])
-
-
-                # extended status
-                self.clientsocket.sendall(b":GU#")
-                time.sleep(0.1)
-                response=self.clientsocket.recv(6)
-                dresponse=response.decode()
-                #print(dresponse)
-                if dresponse[0]=='T':
-                   globals.is_tracking.set(1)
-                   #print('tracking')
-                else:
-                    globals.is_tracking.set(0)
-                    #print('not tracking')
-                if dresponse[1]=='P':
-                    globals.is_parked.set(1)
-                else:
-                    globals.is_parked.set(0)
-                if dresponse[2]=='S':
-                    globals.is_slewing.set(1)
-                else:
-                    globals.is_slewing.set(0)
-                if dresponse[3]=='W':
-                    globals.pierSideWest.set(1)
-                else:
-                    globals.pierSideWest.set(0)
-                globals.track_value.set(dresponse[4])
-                #print('track value:')
-                #print(dresponse[4])
-
-            except TimeoutError:
-                print("Timeout reading status: disconnecting socket")
-                self.thread_exit()
-                raise            
-            except Exception as e:
-                if hasattr(e, 'message'):
-                    print(e.message)
-                else:
-                    print(e)
-                self.thread_exit()
-                raise
-        
-        # schedule next execution
-        threading.Timer(globals.polling_seconds, self.getStatus).start()
-
-
     def processCommands(self):
         if not globals.commandQueue: #empty?
             return
+        if globals.comLock:
+            return
+        globals.comLock=True
         try:
-            cmdObj=globals.commandQueue.pop(0)
-            cmd = ""
+            key=next(iter(globals.commandQueue))
+            cmd = globals.commandQueue.pop(key)
+            maxbytes = globals.commandQueueBytes.pop(key,0)
+            #print('command['+cmd+']')
             self.clientsocket.send(cmd.encode('utf-8'))
-
-
+            time.sleep(0.1)
+            response = ''
+            if maxbytes > 0:
+                bresponse=self.clientsocket.recv(maxbytes)
+                # decoding fallback if needed
+                try:
+                    response=bresponse.decode('')
+                except Exception as e:
+                    response=bresponse.decode('cp1252')
+                #print('maxbytes['+str(maxbytes)+']['+response+']')
+            else:
+                r = ''
+                count = 0
+                while r != '#' or count > 256:
+                    br = self.clientsocket.recv(1)
+                    #print(br)
+                    try:
+                        r=br.decode('')
+                    except Exception as e:
+                        r=br.decode('cp1252') #
+                    response += r
+                    count += 1
+                #print('response['+response+']')
+            globals.responseQueue[key]=response
+            globals.comLock=False
         except TimeoutError:
-            print("Timeout reading status: disconnecting socket")
+            print("Timeout processing commandQueue["+cmd+"]: disconnecting socket")
             self.thread_exit()
             raise            
         except Exception as e:
@@ -249,12 +185,22 @@ class TCPconnection(Thread):
     def processBlindCommands(self):
         if not globals.blindCommandQueue: #empty?
             return
+        if globals.comLock:
+            return
         try:
+            globals.comLock=True
             cmd=globals.blindCommandQueue.pop(0)
+            if cmd == 'FLUSH': #special command, empty buffer
+                self.clientsocket.send(b':Gc#')    
+                self.clientsocket.recv(1024)
+                globals.comLock=False
+                return
+
             self.clientsocket.send(cmd.encode('utf-8'))
+            globals.comLock=False
 
         except TimeoutError:
-            print("Timeout reading status: disconnecting socket")
+            print("Timeout processing commandBlindQueue["+cmd+"]: disconnecting socket")
             self.thread_exit()
             raise            
         except Exception as e:

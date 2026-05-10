@@ -20,13 +20,6 @@ from exceptions import *        # Nothing but exception classes
 
 logger: Logger = None
 
-# ------------------------
-from esp32go_driver import esp32go_driver
-
-esp32go=esp32go_driver()
-# ------------------------
-
-
 # ----------------------
 # MULTI-INSTANCE SUPPORT
 # ----------------------
@@ -44,14 +37,14 @@ maxdev = 0                      # Single instance
 ## EDIT FOR YOUR DEVICE ##
 class TelescopeMetadata:
     """ Metadata describing the Telescope Device. Edit for your device"""
-    Name = 'ESP32go'
-    Version = '1.0'
-    Description = 'ESP32go Telescope'
+    Name = 'Sample Telescope'
+    Version = '##DRIVER VERSION AS STRING##'
+    Description = 'My ASCOM Telescope'
     DeviceType = 'Telescope'
-    DeviceID = 'be2746cc-e462-4679-986f-5d259086c90a' # https://guidgenerator.com/online-guid-generator.aspx
-    Info = 'Alpaca Telescope Device\nImplements ITelescope\nASCOM Initiative'
+    DeviceID = '##GENERATE A NEW GUID AND PASTE HERE##' # https://guidgenerator.com/online-guid-generator.aspx
+    Info = 'Alpaca Sample Device\nImplements ITelescope\nASCOM Initiative'
     MaxDeviceNumber = maxdev
-    InterfaceVersion = 3 ##YOUR DEVICE INTERFACE VERSION##        # ITelescopeVxxx
+    InterfaceVersion = 3 ##YOUR DEVICE INTERFACE VERSION##        # ITelescopeVxxx ####TOCAR!!!!
 
 # --------------
 # SYMBOLIC ENUMS
@@ -124,7 +117,6 @@ class connect:
             # ------------------------
             ### CONNECT THE DEVICE ###
             # ------------------------
-            esp32go.connect()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -134,8 +126,8 @@ class connect:
 class connected:
     def on_get(self, req: Request, resp: Response, devnum: int):
         try:
-            # -------------------------------------
-            is_conn = esp32go.connected() ### READ CONN STATE ###
+            # ------------------------------------- ####TOCAR!!!!
+            is_conn = False ## READ CONN STATE ###
             # -------------------------------------
             resp.text = PropertyResponse(is_conn, req).json
         except Exception as ex:
@@ -149,7 +141,6 @@ class connected:
             # --------------------------------------
             ### CONNECT OR DISCONNECT THE DEVICE ###
             # --------------------------------------
-            esp32go.connect_disconnect(conn) # connect or disconnect
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req, # Put is actually like a method :-(
@@ -160,7 +151,7 @@ class connecting:
     def on_get(self, req: Request, resp: Response, devnum: int):
         try:
             # ------------------------------
-            val = False ## GET CONNECTING STATE ##  ##----- A MANO 
+            val = False## GET CONNECTING STATE ## ####TOCAR!!!!
             # ------------------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -176,7 +167,8 @@ class description:
 class devicestate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##: ####TOCAR!!!!
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -198,7 +190,6 @@ class disconnect:
             # ---------------------------
             ### DISCONNECT THE DEVICE ###
             # ---------------------------
-            esp32go.disconnect()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -233,7 +224,8 @@ class supportedactions:
 class abortslew:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -242,7 +234,6 @@ class abortslew:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.stop()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -252,14 +243,16 @@ class abortslew:
 class alignmentmode:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getAlignmentMode() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = 'P' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -270,14 +263,16 @@ class alignmentmode:
 class altitude:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getAltitude() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!! 
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -288,14 +283,16 @@ class altitude:
 class aperturearea:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getZeroValue()## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -306,14 +303,16 @@ class aperturearea:
 class aperturediameter:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val =  esp32go.getZeroValue()## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -324,14 +323,16 @@ class aperturediameter:
 class athome:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getIsParked() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -342,14 +343,16 @@ class athome:
 class atpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getIsParked() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -360,7 +363,8 @@ class atpark:
 class axisrates:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -379,11 +383,8 @@ class axisrates:
 
         try:
             # ----------------------
-            val = []
-            val.append(StateValue('Maximum', 1))
-            val.append(StateValue('Minimum', 1))
-
-            ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -394,14 +395,16 @@ class axisrates:
 class azimuth:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getAzimuth() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -412,14 +415,16 @@ class azimuth:
 class canfindhome:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -430,7 +435,8 @@ class canfindhome:
 class canmoveaxis:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -449,11 +455,9 @@ class canmoveaxis:
 
         try:
             # ----------------------
-            val = False## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
-            if axis in [0, 1]:
-                val = True
-
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
@@ -463,14 +467,16 @@ class canmoveaxis:
 class canpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = True ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -481,14 +487,16 @@ class canpark:
 class canpulseguide:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = True ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -499,15 +507,16 @@ class canpulseguide:
 class cansetdeclinationrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
-            
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -518,14 +527,16 @@ class cansetdeclinationrate:
 class cansetguiderates:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -536,14 +547,16 @@ class cansetguiderates:
 class cansetpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -554,14 +567,16 @@ class cansetpark:
 class cansetpierside:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -572,14 +587,16 @@ class cansetpierside:
 class cansetrightascensionrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -590,14 +607,16 @@ class cansetrightascensionrate:
 class cansettracking:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = True ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -608,14 +627,16 @@ class cansettracking:
 class canslew:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = True ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -626,14 +647,16 @@ class canslew:
 class canslewaltaz:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -644,14 +667,16 @@ class canslewaltaz:
 class canslewaltazasync:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ##IS DEV CONNECTED##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -662,14 +687,16 @@ class canslewaltazasync:
 class canslewasync:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = True ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -680,14 +707,16 @@ class canslewasync:
 class cansync:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = True ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -698,14 +727,16 @@ class cansync:
 class cansyncaltaz:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -716,14 +747,16 @@ class cansyncaltaz:
 class canunpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = True ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -734,14 +767,16 @@ class canunpark:
 class declination:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getDeclination() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -752,14 +787,16 @@ class declination:
 class declinationrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = 0 ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -767,7 +804,8 @@ class declinationrate:
                             DriverException(0x500, 'Telescope.Declinationrate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -784,8 +822,7 @@ class declinationrate:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Declinationrate failed', ex)).json
@@ -794,7 +831,8 @@ class declinationrate:
 class destinationsideofpier:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -817,7 +855,8 @@ class destinationsideofpier:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # ----------------------
-            val = -1 ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -828,14 +867,16 @@ class destinationsideofpier:
 class doesrefraction:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -843,7 +884,8 @@ class doesrefraction:
                             DriverException(0x500, 'Telescope.Doesrefraction failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -869,14 +911,16 @@ class doesrefraction:
 class equatorialsystem:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = 1 ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -887,7 +931,8 @@ class equatorialsystem:
 class findhome:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -896,8 +941,7 @@ class findhome:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Findhome failed', ex)).json
@@ -906,17 +950,18 @@ class findhome:
 class focallength:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = 0 ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
-            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Focallength failed', ex)).json
@@ -925,14 +970,16 @@ class focallength:
 class guideratedeclination:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getGuideRateDec() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -940,7 +987,8 @@ class guideratedeclination:
                             DriverException(0x500, 'Telescope.Guideratedeclination failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -957,8 +1005,7 @@ class guideratedeclination:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Guideratedeclination failed', ex)).json
@@ -967,14 +1014,16 @@ class guideratedeclination:
 class guideraterightascension:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getGuideRateAr() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -982,7 +1031,8 @@ class guideraterightascension:
                             DriverException(0x500, 'Telescope.Guideraterightascension failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -999,8 +1049,7 @@ class guideraterightascension:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Guideraterightascension failed', ex)).json
@@ -1009,14 +1058,16 @@ class guideraterightascension:
 class ispulseguiding:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1027,7 +1078,8 @@ class ispulseguiding:
 class moveaxis:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1056,26 +1108,7 @@ class moveaxis:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            if axis == 0:
-                if rate > 0:
-                    esp32go.move("E")
-                elif rate < 0:
-                    esp32go.move("W")
-                else: # rate == 0
-                    esp32go.stop("E")
-                    esp32go.stop("W")
-            elif axis == 1:
-                if rate > 0:
-                    esp32go.move("N")
-                elif rate < 0:
-                    esp32go.move("S")
-                else: # rate == 0
-                    esp32go.stop("N")
-                    esp32go.stop("S")
-            if not axis in [0, 1]:
-                resp.text = MethodResponse(req, NotImplementedException()).json
-            else:
-                resp.text = MethodResponse(req).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Moveaxis failed', ex)).json
@@ -1084,7 +1117,8 @@ class moveaxis:
 class park:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1093,7 +1127,6 @@ class park:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.goHome()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1103,7 +1136,8 @@ class park:
 class pulseguide:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1132,17 +1166,6 @@ class pulseguide:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            guidedir='w'
-            match direction:
-                case 0:
-                    guidedir="n"
-                case 1:
-                    guidedir='s'
-                case 2:
-                    guidedir='e'
-                case 3:
-                    guidedir='w'
-            esp32go.pulseguide(guidedir,duration)
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1152,14 +1175,16 @@ class pulseguide:
 class rightascension:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getRightAscension() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1170,14 +1195,16 @@ class rightascension:
 class rightascensionrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = 0 ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1185,7 +1212,8 @@ class rightascensionrate:
                             DriverException(0x500, 'Telescope.Rightascensionrate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1202,8 +1230,7 @@ class rightascensionrate:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Rightascensionrate failed', ex)).json
@@ -1212,7 +1239,8 @@ class rightascensionrate:
 class setpark:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1221,8 +1249,7 @@ class setpark:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Setpark failed', ex)).json
@@ -1231,14 +1258,16 @@ class setpark:
 class sideofpier:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getPierSide() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1246,7 +1275,8 @@ class sideofpier:
                             DriverException(0x500, 'Telescope.Sideofpier failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1267,8 +1297,7 @@ class sideofpier:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sideofpier failed', ex)).json
@@ -1277,14 +1306,16 @@ class sideofpier:
 class siderealtime:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getSiderealTime() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1295,7 +1326,8 @@ class siderealtime:
 class siteelevation:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1303,15 +1335,16 @@ class siteelevation:
         try:
             # ----------------------
             #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
-            #resp.text = PropertyResponse(val, req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Siteelevation failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1328,8 +1361,7 @@ class siteelevation:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Siteelevation failed', ex)).json
@@ -1338,14 +1370,16 @@ class siteelevation:
 class sitelatitude:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getLatitude() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1353,7 +1387,8 @@ class sitelatitude:
                             DriverException(0x500, 'Telescope.Sitelatitude failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1370,8 +1405,7 @@ class sitelatitude:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sitelatitude failed', ex)).json
@@ -1380,14 +1414,16 @@ class sitelatitude:
 class sitelongitude:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getLongitude() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1395,7 +1431,8 @@ class sitelongitude:
                             DriverException(0x500, 'Telescope.Sitelongitude failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1412,8 +1449,7 @@ class sitelongitude:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sitelongitude failed', ex)).json
@@ -1422,14 +1458,16 @@ class sitelongitude:
 class slewing:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.isSlewing() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1440,7 +1478,8 @@ class slewing:
 class slewsettletime:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1448,15 +1487,16 @@ class slewsettletime:
         try:
             # ----------------------
             #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
-            #resp.text = PropertyResponse(val, req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Slewsettletime failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1473,8 +1513,7 @@ class slewsettletime:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewsettletime failed', ex)).json
@@ -1483,7 +1522,8 @@ class slewsettletime:
 class slewtoaltaz:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1508,8 +1548,7 @@ class slewtoaltaz:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtoaltaz failed', ex)).json
@@ -1518,7 +1557,8 @@ class slewtoaltaz:
 class slewtoaltazasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1543,8 +1583,7 @@ class slewtoaltazasync:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtoaltazasync failed', ex)).json
@@ -1553,7 +1592,8 @@ class slewtoaltazasync:
 class slewtocoordinates:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1578,13 +1618,7 @@ class slewtocoordinates:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.setTargetDec(declination)
-            esp32go.setTargetRa(rightascension)
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtocoordinates failed', ex)).json
@@ -1593,7 +1627,8 @@ class slewtocoordinates:
 class slewtocoordinatesasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1618,13 +1653,7 @@ class slewtocoordinatesasync:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.setTargetDec(declination)
-            esp32go.setTargetRa(rightascension)
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtocoordinatesasync failed', ex)).json
@@ -1633,7 +1662,8 @@ class slewtocoordinatesasync:
 class slewtotarget:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1642,11 +1672,7 @@ class slewtotarget:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtotarget failed', ex)).json
@@ -1655,7 +1681,8 @@ class slewtotarget:
 class slewtotargetasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1664,11 +1691,7 @@ class slewtotargetasync:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtotargetasync failed', ex)).json
@@ -1677,7 +1700,8 @@ class slewtotargetasync:
 class synctoaltaz:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1702,8 +1726,7 @@ class synctoaltaz:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Synctoaltaz failed', ex)).json
@@ -1712,7 +1735,8 @@ class synctoaltaz:
 class synctocoordinates:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1737,9 +1761,6 @@ class synctocoordinates:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.setTargetDec(declination)
-            esp32go.setTargetRa(rightascension)
-            esp32go.syncToTarget()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1749,7 +1770,8 @@ class synctocoordinates:
 class synctotarget:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1758,7 +1780,6 @@ class synctotarget:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.syncToTarget()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1768,14 +1789,16 @@ class synctotarget:
 class targetdeclination:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getTargetDec() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1783,7 +1806,8 @@ class targetdeclination:
                             DriverException(0x500, 'Telescope.Targetdeclination failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1800,7 +1824,6 @@ class targetdeclination:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.setTargetDec(declination)
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1810,14 +1833,16 @@ class targetdeclination:
 class targetrightascension:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getTargetRa() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1825,7 +1850,8 @@ class targetrightascension:
                             DriverException(0x500, 'Telescope.Targetrightascension failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1842,7 +1868,6 @@ class targetrightascension:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.setTargetRa()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1852,14 +1877,16 @@ class targetrightascension:
 class tracking:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.isTracking() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1867,7 +1894,8 @@ class tracking:
                             DriverException(0x500, 'Telescope.Tracking failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1884,7 +1912,6 @@ class tracking:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.setTracking(tracking)
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1894,14 +1921,16 @@ class tracking:
 class trackingrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getTrackingRate() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1909,7 +1938,8 @@ class trackingrate:
                             DriverException(0x500, 'Telescope.Trackingrate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1926,7 +1956,6 @@ class trackingrate:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.setTrackingRate(trackingrate)
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -1936,15 +1965,16 @@ class trackingrate:
 class trackingrates:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = [0,1,2,3]
-            ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1955,23 +1985,25 @@ class trackingrates:
 class utcdate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ####TOCAR!!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = esp32go.getUTCdate() ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
+            val = '???' ####TOCAR!!!!
             # ----------------------
             resp.text = PropertyResponse(val, req).json
-            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Utcdate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1982,8 +2014,7 @@ class utcdate:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Utcdate failed', ex)).json
@@ -1992,7 +2023,8 @@ class utcdate:
 class unpark:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not esp32go.connected(): ##IS DEV CONNECTED##:
+        #if not ## IS DEV CONNECTED ##:
+        if True: ###TOCAR!!!
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -2001,7 +2033,6 @@ class unpark:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            esp32go.unpark()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
