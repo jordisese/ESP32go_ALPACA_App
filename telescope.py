@@ -380,8 +380,9 @@ class axisrates:
         try:
             # ----------------------
             val = []
-            val.append(StateValue('Maximum', 1))
-            val.append(StateValue('Minimum', 1))
+            val = esp32go.getSpeedRates()
+            #val.append(StateValue('Maximum', 4))
+            #val.append(StateValue('Minimum', 1))
 
             ## GET PROPERTY ##
             # ----------------------
@@ -543,7 +544,8 @@ class cansetpark:
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            # --- SI NO ESTA A -TRUE- NINA NO HACE SYNC!!!!!
+            val = True ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -759,7 +761,7 @@ class declinationrate:
         
         try:
             # ----------------------
-            val = 0 ## GET PROPERTY ##
+            val = 2 ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1177,7 +1179,7 @@ class rightascensionrate:
         
         try:
             # ----------------------
-            val = 0 ## GET PROPERTY ##
+            val = 2 ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1284,9 +1286,10 @@ class siderealtime:
         
         try:
             # ----------------------
-            val = esp32go.getSiderealTime() ## GET PROPERTY ##
+            #val = esp32go.getSiderealTime() ## GET PROPERTY ##
             # ----------------------
-            resp.text = PropertyResponse(val, req).json
+            #resp.text = PropertyResponse(val, req).json
+            resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Siderealtime failed', ex)).json
@@ -1370,8 +1373,8 @@ class sitelatitude:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
+            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sitelatitude failed', ex)).json
@@ -1412,8 +1415,8 @@ class sitelongitude:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
+            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sitelongitude failed', ex)).json
@@ -1580,11 +1583,8 @@ class slewtocoordinates:
             # -----------------------------
             esp32go.setTargetDec(declination)
             esp32go.setTargetRa(rightascension)
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            esp32go.slewToTarget()
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtocoordinates failed', ex)).json
@@ -1620,11 +1620,8 @@ class slewtocoordinatesasync:
             # -----------------------------
             esp32go.setTargetDec(declination)
             esp32go.setTargetRa(rightascension)
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            esp32go.slewToTarget()
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtocoordinatesasync failed', ex)).json
@@ -1642,11 +1639,8 @@ class slewtotarget:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            esp32go.slewToTarget()
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtotarget failed', ex)).json
@@ -1664,11 +1658,8 @@ class slewtotargetasync:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            if esp32go.slewToTarget() != 0:
-                resp.text = MethodResponse(req,
-                            InvalidValueException(f'Slew cannot be done. Object out of limits.')).json
-            else:
-                resp.text = MethodResponse(req).json
+            esp32go.slewToTarget()
+            resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtotargetasync failed', ex)).json

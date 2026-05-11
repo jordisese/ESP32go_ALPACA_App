@@ -44,16 +44,11 @@ class esp32go_driver:
 
         globals.tcp_please_disconnect=False
 
-        # secondary threads
-        #print('Starting thread')
-        #_TCP = tcpsocket.TCPconnection('192.168.1.21',10001)
-        #_TCP = tcpsocket.TCPconnection(Config.esp32go_ip_address,Config.esp32go_port)
-        #_TCP.getDateTime()
-        #print(self.getUTCdate())
-        #return
-
         try:
             self._TCP = tcpsocket.TCPconnection(Config.esp32go_ip_address,Config.esp32go_port)
+
+            self.getBasicData()
+
 
         except:
             print("Exception connecting to ESP32go")
@@ -246,7 +241,10 @@ class esp32go_driver:
         return float(globals.az_guide_speed.get())
     
     def getPierSide(self):
-        return int(globals.pierSideWest.get())
+        if globals.pierSideWest.get() == '1':
+            return 1
+        else:
+            return 0
     
     def getSiderealTime(self, raw=False):
         #------------ falta update sidereal time
@@ -299,7 +297,7 @@ class esp32go_driver:
     # ---- GOTO / SLEW
 
     def setTargetDec(self, declination):
-        #print("setTargetDec["+str(declination)+"]")
+        print("setTargetDec["+str(declination)+"]")
         x = declination * 3600;
         c = '+'
         if x < 0:
@@ -311,27 +309,30 @@ class esp32go_driver:
         sec = int(temp % 60)
         cmd = ':Sd'+c+str(gra).zfill(2)+'*'+str(mins).zfill(2)+':'+str(sec).zfill(2)+'#'
 #sprintf(message, ":Sd%c%02d*%02d:%02d#", c, gra, min, sec);
-        #print(cmd)
+        print(cmd)
         self.sendCommand(cmd)
             
     def setTargetRa(self, rightascension):
-        #print("setTargetRa["+str(rightascension)+"]")
+        print("setTargetRa["+str(rightascension)+"]")
         seconds = rightascension * 3600 * 15
         x = math.trunc(seconds)/ 15.0
         #rest = ((seconds % 15) * 2) / 3
         #rest %= 15
+        #rest = seconds % 15 
         rest = 0
         gra = int(x / 3600)
         temp = (x % 3600) 
         mins = int(temp / 60)
         sec = int(temp % 60)
         cmd = ':Sr'+str(gra).zfill(2)+':'+str(mins).zfill(2)+':'+str(sec).zfill(2)+'.'+str(rest)+'#'
-        #print(cmd)
+        print(cmd)
 #sprintf(message, ":Sr%02d:%02d:%02d.%d#", gra, min, sec, rest);
         self.sendCommand(cmd)
             
     def slewToTarget(self):
-        return int(self.sendCommandWaitReply(":MS#",2))
+        resp = self.sendCommandWaitReply(":MS#",2)
+        #print("slew["+str(resp)+"]")
+        return resp
 
     def syncToTarget(self):
         self.sendCommandWaitReply(":CM#")
@@ -346,6 +347,32 @@ class esp32go_driver:
     def unpark(self):
         self.sendCommand(cmd=":Mw#:Qw#")
     
+    def getSpeedRates(self):
+        rates=[]
+        #guide={}
+        #find={}
+        #center={}
+        #slew={}
+        #guide['Minimum']=float(globals.az_guide_speed.get())
+        #guide['Maximum']=float(globals.az_guide_speed.get())
+        #center['Minimum']=float(globals.az_center_speed.get())
+        #center['Maximum']=float(globals.az_center_speed.get())
+        #find['Minimum']=float(globals.az_find_speed.get())
+        #find['Maximum']=float(globals.az_find_speed.get())
+        #slew['Minimum']=float(globals.az_slew_speed.get())
+        #slew['Maximum']=float(globals.az_slew_speed.get())
+
+        #rates.append(guide)
+        #rates.append(center)
+        #rates.append(find)
+        #rates.append(slew)
+
+        rate={}
+        rate['Minimum']=0
+        rate['Maximum']=15
+        rates.append(rate)
+
+        return rates
 
     def signedDegToFloat(self, rawvalue): #-03º22129"
         s= 1
@@ -379,14 +406,17 @@ class esp32go_driver:
         self.flush()
         time.sleep(0.5)
         response = self.sendCommandWaitReply(':GG#') #UTC difference
+        if response == None:
+            return
         #print(response)
         globals.utcdiff_value.set(response[:-1])
         utcdiff = int(response[:-1])
+
         response = self.sendCommandWaitReply(':GC#') # Local date
-        globals.date_value.set(response[:8])
-        datetimeval=response[:8]
+        globals.date_value.set(response[:-1])
+        datetimeval=response[:-1]
         response = self.sendCommandWaitReply(':GL#') # Local time
-        globals.localtime_value.set(response[:8])
+        globals.localtime_value.set(response[:-1])
         datetimeval +=' '+response[:8]
         #----------------
         # store difference with computer time
@@ -397,3 +427,48 @@ class esp32go_driver:
         esptime = esptime.replace(tzinfo=datetime.timezone.utc)
         timediff = pctime - esptime
         globals.localtime_diff_value.set(timediff.total_seconds())
+
+    def getBasicData(self):
+        #print('getBasicData')
+        if not globals.tcp_connected:
+            return
+        self.flush()
+        time.sleep(0.5)
+        #ACK
+        #print('ACK')
+        response = self.sendCommandWaitReply(b'\x06',2)
+        #print(response)
+        if response[0]=='A':
+            #print('AltAz')
+            globals.is_altAz.set(1)
+        else:
+            globals.is_altAz.set(0)
+        #check esp32go version level - PENDING!!!
+
+
+
+        #print('config')
+        #full config
+        response = self.sendCommandWaitReply(':cA#')
+        #print(response)
+        res = response.splitlines()
+        #print(res)
+        globals.longitude.set(res[11])
+        globals.latitude.set(res[12])
+        #print(globals.longitude.get())
+        #print(globals.latitude.get())
+        globals.az_count.set(res[0])
+        globals.alt_count.set(res[1])
+
+        globals.az_guide_speed.set(res[2])
+        globals.az_center_speed.set(res[3])
+        globals.az_find_speed.set(res[4])
+        globals.az_slew_speed.set(res[5])
+
+        globals.alt_guide_speed.set(res[6])
+        globals.alt_center_speed.set(res[7])
+        globals.alt_find_speed.set(res[8])
+        globals.alt_slew_speed.set(res[9])
+
+        globals.eqTrack.set(res[19])
+

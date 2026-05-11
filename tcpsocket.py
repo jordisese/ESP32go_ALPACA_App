@@ -24,7 +24,7 @@ class TCPconnection(Thread):
             #self.clientsocket.connect(('192.168.1.21', 10001))
             #self.clientsocket.connect((ADDR, PORT))
             self.clientsocket = socket.create_connection((ADDR, PORT),5)
-            self.getBasicData()
+            #self.getBasicData()
 
         except TimeoutError:
             globals.connect_disconnect.set('Connect')
@@ -76,61 +76,6 @@ class TCPconnection(Thread):
                 self.thread_exit()
                 return
 
-    def getBasicData(self):
-        try:
-            globals.comLock=True
-            #ACK
-            self.clientsocket.send(b'\x06')
-            time.sleep(0.1)
-            bresponse=self.clientsocket.recv(2)
-            response=bresponse.decode()
-            #print(response)
-            if response[0]=='A':
-                #print('AltAz')
-                globals.is_altAz.set(1)
-            else:
-                globals.is_altAz.set(0)
-            
-            #Config
-            self.clientsocket.send(b':cA#')
-            time.sleep(0.1)
-            bresponse=self.clientsocket.recv(512)
-            globals.comLock=False
-            response=bresponse.decode('cp1252')
-            #print(response)
-            res = response.splitlines()
-            #print(res)
-            globals.longitude.set(res[11])
-            globals.latitude.set(res[12])
-            #print(globals.longitude.get())
-            #print(globals.latitude.get())
-            globals.az_count.set(res[0])
-            globals.alt_count.set(res[1])
-
-            globals.az_guide_speed.set(res[2])
-            globals.az_center_speed.set(res[3])
-            globals.az_find_speed.set(res[4])
-            globals.az_slew_speed.set(res[5])
-
-            globals.alt_guide_speed.set(res[6])
-            globals.alt_center_speed.set(res[7])
-            globals.alt_find_speed.set(res[8])
-            globals.alt_slew_speed.set(res[9])
-
-            globals.eqTrack.set(res[19])
-
-
-        except TimeoutError:
-            print("Timeout reading basic data: disconnecting socket")
-            self.thread_exit()
-            raise            
-        except Exception as e:
-            if hasattr(e, 'message'):
-                print(e.message)
-            else:
-                print(e)
-            self.thread_exit()
-            raise
 
     def processCommands(self):
         if not globals.commandQueue: #empty?
@@ -143,7 +88,10 @@ class TCPconnection(Thread):
             cmd = globals.commandQueue.pop(key)
             maxbytes = globals.commandQueueBytes.pop(key,0)
             #print('command['+cmd+']')
-            self.clientsocket.send(cmd.encode('utf-8'))
+            if isinstance(cmd, (bytes, bytearray)):
+                self.clientsocket.send(cmd)
+            else:
+                self.clientsocket.send(cmd.encode('utf-8'))
             time.sleep(0.1)
             response = ''
             if maxbytes > 0:
@@ -191,12 +139,17 @@ class TCPconnection(Thread):
             globals.comLock=True
             cmd=globals.blindCommandQueue.pop(0)
             if cmd == 'FLUSH': #special command, empty buffer
-                self.clientsocket.send(b':Gc#')    
+                self.clientsocket.send(b':Gc#')   
+                time.sleep(0.1) 
                 self.clientsocket.recv(1024)
                 globals.comLock=False
                 return
 
-            self.clientsocket.send(cmd.encode('utf-8'))
+            if isinstance(cmd, (bytes, bytearray)):
+                self.clientsocket.send(cmd)
+            else:
+                self.clientsocket.send(cmd.encode('utf-8'))
+            time.sleep(0.1) 
             globals.comLock=False
 
         except TimeoutError:
