@@ -20,10 +20,18 @@ class esp32go_driver:
         return globals.tcp_connected
 
     def connect(self, blind=True):
+        globals.connect_picgotoLevel.set('')
         self.tcp_connect(blind=blind)
+        print("picGotoLevel["+str(globals.picGotoLevel)+"]")
+        match globals.picGotoLevel:
+            case 2:
+                globals.connect_picgotoLevel.set('PicGoto Mode (very limited)')
+            case 1:
+                globals.connect_picgotoLevel.set('FW outdated: Please update ESP32go')
         self.initDateTime()
 
     def disconnect(self):
+        globals.connect_picgotoLevel.set('')
         return self.tcp_disconnect()
     
     def connect_disconnect(self, action:bool):
@@ -50,8 +58,13 @@ class esp32go_driver:
             self.getBasicData()
 
 
-        except:
+        except Exception as e:
             print("Exception connecting to ESP32go")
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+
             if globals.connection_error == True:
                 globals.connection_error = False
                 if not blind:
@@ -81,7 +94,7 @@ class esp32go_driver:
         random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
         return random_string
 
-    def sendCommandWaitReply(self,cmd:str,maxbytes=0):
+    def sendCommandWaitReply(self,cmd:str,maxbytes=0,captureTimeout=False):
         import time
         response = ''
         timeout = 5 
@@ -91,6 +104,9 @@ class esp32go_driver:
         cmdId=self.generateId()
         if maxbytes > 0:
             globals.commandQueueBytes[cmdId]=maxbytes
+        if captureTimeout:
+            globals.commandCaptureTimeout[cmdId]=True
+
         globals.commandQueue[cmdId]=cmd
         #print('self.sendCommandWaitReply['+cmd+']')
         start = time.time()
@@ -119,8 +135,11 @@ class esp32go_driver:
 
     #--- commands
     def setMoveSpeed(self,rate:int):
+        print("setMoveSpeed["+str(rate)+"]")
+        rate = abs(int(rate))
+        if rate > 3:
+            rate = 3
         globals.speed_value.set(rate)
-
 
     def speed_move(self, dir:str):
         speed=self.speed_cmd()
@@ -169,6 +188,9 @@ class esp32go_driver:
         self.sendCommand(cmd=":Mg"+direction+str(interval)+"#")
 
     def setTrackingRate(self,rate:int): #rate is alpaca value
+        if globals.picGotoLevel > 0: # not supported in older FW versions
+            return
+        
         match rate:
             case 0: # sideral
                 self.sendCommand(cmd=":TQ#")
@@ -267,7 +289,7 @@ class esp32go_driver:
         localtime=globals.localtime_value.get()
         #print(localtime)
         utcdiff=int(globals.utcdiff_value.get())
-        dateobj = datetime.datetime.strptime(date+" "+localtime,'%m/%d/%y %H:%M:%S')
+        dateobj = datetime.datetime.strptime(date+"T"+localtime,'%m/%d/%YT%H:%M:%S')
         dateUTC = dateobj + datetime.timedelta(hours=utcdiff)
         return dateUTC.strftime("%Y-%m-%dT%H:%M:%S.123456Z")
     
@@ -294,7 +316,17 @@ class esp32go_driver:
         else:
             return False
     
-    # ---- GOTO / SLEW
+    # ---- SET / GOTO / SLEW
+
+    def setUTCdate(self, utcdate):
+        print("setUTCdate["+str(utcdate)+"]")
+        utcdiff=int(globals.utcdiff_value.get())
+        dateobj = datetime.datetime.strptime(utcdate[:19],'%Y-%m-%dT%H:%M:%S')
+        #dateobj=dateobj.replace(tzinfo=datetime.timezone.utc)
+        esptime = dateobj - datetime.timedelta(hours=utcdiff)
+        globals.localtime_value.set(esptime.strftime("%H:%M:%S"))
+        globals.date_value.set(esptime.strftime("%m/%d/%Y"))
+        self.syncLocalDateTime()
 
     def setTargetDec(self, declination):
         print("setTargetDec["+str(declination)+"]")
@@ -314,19 +346,20 @@ class esp32go_driver:
             
     def setTargetRa(self, rightascension):
         print("setTargetRa["+str(rightascension)+"]")
+        
         seconds = rightascension * 3600 * 15
         x = math.trunc(seconds)/ 15.0
-        #rest = ((seconds % 15) * 2) / 3
-        #rest %= 15
-        #rest = seconds % 15 
+        ##rest = ((seconds % 15) * 2) / 3
+        ##rest %= 15
+        ##rest = seconds % 15 
         rest = 0
         gra = int(x / 3600)
         temp = (x % 3600) 
         mins = int(temp / 60)
         sec = int(temp % 60)
         cmd = ':Sr'+str(gra).zfill(2)+':'+str(mins).zfill(2)+':'+str(sec).zfill(2)+'.'+str(rest)+'#'
+
         print(cmd)
-#sprintf(message, ":Sr%02d:%02d:%02d.%d#", gra, min, sec, rest);
         self.sendCommand(cmd)
             
     def slewToTarget(self):
@@ -343,33 +376,34 @@ class esp32go_driver:
         else:
             self.sendCommand(":Qw#")
         
+    def setLatitude(self, latitude):
+        globals.latitude.set(latitude)
+        lat = f"{latitude:05.2f}"
+        if latitude > 0:
+            lat = '+'+lat
+        #print("setLatitude["+lat+"]")
+        cmd=":St"+lat+"#"
+        #print("cmd["+cmd+"]")
+        self.sendCommand(cmd)
+
+    def setLongitude(self, longitude):
+        globals.longitude.set(longitude)
+        lon = f"{longitude:06.2f}"
+        if longitude > 0:
+            lon = '+'+lon
+        #print("setLongitude["+lon+"]")
+        cmd=":Sg"+lon+"#"
+        #print("cmd["+cmd+"]")
+        self.sendCommand(cmd)
 
     def unpark(self):
         self.sendCommand(cmd=":Mw#:Qw#")
     
     def getSpeedRates(self):
         rates=[]
-        #guide={}
-        #find={}
-        #center={}
-        #slew={}
-        #guide['Minimum']=float(globals.az_guide_speed.get())
-        #guide['Maximum']=float(globals.az_guide_speed.get())
-        #center['Minimum']=float(globals.az_center_speed.get())
-        #center['Maximum']=float(globals.az_center_speed.get())
-        #find['Minimum']=float(globals.az_find_speed.get())
-        #find['Maximum']=float(globals.az_find_speed.get())
-        #slew['Minimum']=float(globals.az_slew_speed.get())
-        #slew['Maximum']=float(globals.az_slew_speed.get())
-
-        #rates.append(guide)
-        #rates.append(center)
-        #rates.append(find)
-        #rates.append(slew)
-
         rate={}
         rate['Minimum']=0
-        rate['Maximum']=15
+        rate['Maximum']=4
         rates.append(rate)
 
         return rates
@@ -400,33 +434,64 @@ class esp32go_driver:
         value = int(gra) + int(mins)/60 + float(secs)/3600
         return value
     
+    def syncLocalDateTime(self):
+
+        ltime = globals.localtime_value.get()
+        ldate = globals.date_value.get()
+
+        esptime = datetime.datetime.strptime(ldate+"T"+ltime,'%m/%d/%YT%H:%M:%S')
+
+        cmd2 = ":SL"+esptime.strftime("%H:%M:%S")+"#" 
+        self.sendCommand(cmd2)
+        time.sleep(1)
+        self.flush() # just in case              
+        cmd1 = ":SC"+esptime.strftime("%m/%d/%y")+"#"
+        self.sendCommand(cmd1)
+        time.sleep(1)
+        self.flush() # just in case
+
+    
     def initDateTime(self):
+        #print('initDateTime')
         if not globals.tcp_connected:
             return
         self.flush()
-        time.sleep(0.5)
+        #time.sleep(0.5)
+
+        globals.localtime_diff_value.set(0)
         response = self.sendCommandWaitReply(':GG#') #UTC difference
-        if response == None:
+        if response == None or response == '':
+            globals.localtime_diff_value.set(0)
             return
         #print(response)
         globals.utcdiff_value.set(response[:-1])
-        utcdiff = int(response[:-1])
+        utcdiff = float(response[:-1])
 
-        response = self.sendCommandWaitReply(':GC#') # Local date
-        globals.date_value.set(response[:-1])
-        datetimeval=response[:-1]
-        response = self.sendCommandWaitReply(':GL#') # Local time
-        globals.localtime_value.set(response[:-1])
-        datetimeval +=' '+response[:8]
-        #----------------
-        # store difference with computer time
-        #----------------
-        pctime = datetime.datetime.now(datetime.timezone.utc)
-        esptime = datetime.datetime.strptime(datetimeval,'%m/%d/%y %H:%M:%S')
-        esptime = esptime + datetime.timedelta(hours=utcdiff)
-        esptime = esptime.replace(tzinfo=datetime.timezone.utc)
-        timediff = pctime - esptime
-        globals.localtime_diff_value.set(timediff.total_seconds())
+        if globals.picGotoLevel == 2: # we MUST sync date/time
+            self.flush() # just in case
+            pctime = datetime.datetime.now(datetime.timezone.utc)
+            esptime = pctime - datetime.timedelta(hours=utcdiff)
+            globals.localtime_value.set(esptime.strftime("%H:%M:%S"))
+            globals.date_value.set(esptime.strftime("%m/%d/%Y"))
+            self.syncLocalDateTime()
+
+        else:
+            response = self.sendCommandWaitReply(':GC#') # Local date
+            globals.date_value.set(response[:-1])
+            date=response[:-1]
+            response = self.sendCommandWaitReply(':GL#') # Local time
+            globals.localtime_value.set(response[:-1])
+            datetimeval = date + ' '+ response[:-1]
+            #print(datetimeval)
+            #----------------
+            # store difference with computer time
+            #----------------
+            pctime = datetime.datetime.now(datetime.timezone.utc)
+            esptime = datetime.datetime.strptime(datetimeval,'%m/%d/%y %H:%M:%S')
+            esptime = esptime + datetime.timedelta(hours=utcdiff)
+            esptime = esptime.replace(tzinfo=datetime.timezone.utc)
+            timediff = pctime - esptime
+            globals.localtime_diff_value.set(timediff.total_seconds())
 
     def getBasicData(self):
         #print('getBasicData')
@@ -443,32 +508,148 @@ class esp32go_driver:
             globals.is_altAz.set(1)
         else:
             globals.is_altAz.set(0)
-        #check esp32go version level - PENDING!!!
 
-
+        #check esp32go version level
+        globals.picGotoLevel = 0 # assume ESP32go full support
 
         #print('config')
         #full config
-        response = self.sendCommandWaitReply(':cA#')
+        response = self.sendCommandWaitReply(':cA#',0,True)
         #print(response)
-        res = response.splitlines()
-        #print(res)
-        globals.longitude.set(res[11])
-        globals.latitude.set(res[12])
-        #print(globals.longitude.get())
-        #print(globals.latitude.get())
-        globals.az_count.set(res[0])
-        globals.alt_count.set(res[1])
+        if response == 'TIMEOUT' or response == '':
+            print("Old PicGoto compatibility mode")
+            globals.picGotoLevel = 2 # old picGoto board
+            #print("picGotoLevel["+str(globals.picGotoLevel)+"]")
+            # get longitude / latitude from lx200 commands (low res)
+            #lat
+            response = self.sendCommandWaitReply(":Gt#")
+            globals.latitude.set(response[:-1])
+            #long
+            response = self.sendCommandWaitReply(":Gg#")
+            globals.longitude.set(response[:-1])
+            #print("after config picgoto")
 
-        globals.az_guide_speed.set(res[2])
-        globals.az_center_speed.set(res[3])
-        globals.az_find_speed.set(res[4])
-        globals.az_slew_speed.set(res[5])
+        else:
+            res = response.splitlines()
+            #print(res)
+            globals.longitude.set(res[11])
+            globals.latitude.set(res[12])
+            #print(globals.longitude.get())
+            #print(globals.latitude.get())
+            globals.az_count.set(res[0])
+            globals.alt_count.set(res[1])
 
-        globals.alt_guide_speed.set(res[6])
-        globals.alt_center_speed.set(res[7])
-        globals.alt_find_speed.set(res[8])
-        globals.alt_slew_speed.set(res[9])
+            globals.az_guide_speed.set(res[2])
+            globals.az_center_speed.set(res[3])
+            globals.az_find_speed.set(res[4])
+            globals.az_slew_speed.set(res[5])
 
-        globals.eqTrack.set(res[19])
+            globals.alt_guide_speed.set(res[6])
+            globals.alt_center_speed.set(res[7])
+            globals.alt_find_speed.set(res[8])
+            globals.alt_slew_speed.set(res[9])
 
+            globals.eqTrack.set(res[19])
+
+        if globals.picGotoLevel < 2:
+            # ESP32go full ?
+            #print('GVN')
+            response = self.sendCommandWaitReply(':GVN#',0,True)
+            #print(response)
+            res=response[:-1]
+            #print(res)
+            if response == 'TIMEOUT' or float(res) < 0:
+                globals.picGotoLevel = 2 # just in case
+            elif float(res) < 5:
+                globals.picGotoLevel = 1 # ESP32go not updated
+                print("ESP32go pre-V5 mode")
+
+        #print("picGotoLevel["+str(globals.picGotoLevel)+"]")
+
+
+    def updateStatus(self):
+        if globals.comLock:
+            return
+
+        if self.connected() and not globals.commandQueue and not globals.blindCommandQueue: #preference is given to queued commands
+            self.flush()
+
+        if globals.picGotoLevel > 1: # old picGoto, no status commands available
+            time.sleep(0.5)
+            response = self.sendCommandWaitReply(":GR#")
+            if response == None or response == '':
+                return
+            #print("RA["+response+"]")
+            pos=response[:2]+'h'+response[3:5]+'m'+response[6:10]+'s'
+            globals.ra_position.set(pos)      
+            response = self.sendCommandWaitReply(":GD#")
+            #print("DEC["+response+"]")
+            pos=response[:3]+'º'+response[4:6]+'\''+response[7:9]+'"'
+            globals.dec_position.set(pos)     
+            globals.track_value.set(0)        
+            return
+
+        response = self.sendCommandWaitReply(":Gx#",50)
+        if response == None or len(response) < 45:
+            #print(response)
+            #self.flush()
+            return
+        #print(response)
+        pos=response[:2]+'h'+response[3:5]+'m'+response[6:10]+'s'
+        globals.ra_position.set(pos)
+
+        pos=response[11:14]+'º'+response[15:17]+'\''+response[18:20]+'"'
+        globals.dec_position.set(pos)
+
+        if globals.is_altAz.get()=='1':
+            pos=response[21:24]+'º'+response[25:27]+'\''+response[28:30]+'"'
+            globals.az_position.set(pos)
+            pos=response[31:34]+'º'+response[35:37]+'\''+response[38:40]+'"'
+
+            globals.alt_position.set(pos)
+        #else:
+        #    print("EQ only")
+
+            #globals.az_position.set(response[21:29])
+            #globals.alt_position.set(response[31:39])
+
+        if globals.picGotoLevel != 0: # extended status not supported
+            globals.track_value.set(0)
+            return
+        
+        # extended status
+        dresponse = self.sendCommandWaitReply(":GU#")
+        if dresponse == None or len(dresponse) < 4:
+            #print(dresponse)
+            #self.flush()
+            return
+        if dresponse[0]=='T':
+            globals.is_tracking.set(1)
+            #print('tracking')
+        else:
+            globals.is_tracking.set(0)
+        #print('not tracking')
+        if dresponse[1]=='P':
+            globals.is_parked.set(1)
+        else:
+            globals.is_parked.set(0)
+        if dresponse[2]=='S':
+            globals.is_slewing.set(1)
+        else:
+            globals.is_slewing.set(0)
+        if dresponse[3]=='W':
+            globals.pierSideWest.set(1)
+        else:
+            globals.pierSideWest.set(0)
+        #globals.track_value.set(dresponse[4]) 
+        match dresponse[4]: # set to valid alpaca values
+            case '1': # sideral
+                globals.track_value.set(0)
+            case '2': # solar
+                globals.track_value.set(2)
+            case '3': # lunar
+                globals.track_value.set(1)
+            case '4': # king
+                globals.track_value.set(3)
+            case _: 
+                globals.track_value.set(0)

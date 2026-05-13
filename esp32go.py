@@ -118,14 +118,16 @@ def create_scope_frame(container):
     globals.connect_disconnect.set('Connect')
     globals.connect_status.set('Disconnected')
     globals.connected_status.set('')
+    globals.connect_picgotoLevel.set('')
 
-
+    lbl_note = tk.Label(frame4, textvariable=globals.connect_picgotoLevel, font=globals.connect_note_font, fg='red')
+    lbl_note.grid(column=0, row=0, columnspan=3)
     lbl_disconnected = tk.Label(frame4, textvariable=globals.connect_status, font=globals.connect_status_font, fg='red')
-    lbl_disconnected.grid(column=0, row=0)
+    lbl_disconnected.grid(column=0, row=1)
     lbl_connected = tk.Label(frame4, textvariable=globals.connected_status, font=globals.connect_status_font, fg='green')
-    lbl_connected.grid(column=1, row=0)
+    lbl_connected.grid(column=1, row=1)
     but_connect = Button(frame4, textvariable=globals.connect_disconnect, command=connect_disconnect, font=globals.connect_disconnect_font)
-    but_connect.grid(column=2, row=0)    
+    but_connect.grid(column=2, row=1)    
 
     frame5 = tk.LabelFrame(frame,width=30, text="Homing")
 
@@ -260,7 +262,7 @@ def connect_disconnect():
         return
     globals.connect_status.set('Connecting...')
     root.update()
-    return esp32go.connect(blind=False)
+    esp32go.connect(blind=False)
 
 
 def fire_alpaca_discovery():
@@ -282,87 +284,20 @@ def fire_alpaca_server():
 
 def update_status():
 
-    if globals.comLock:
-        threading.Timer(globals.polling_seconds, update_status).start()
-        return
+     # update local/utc time values
+    pcnow = datetime.datetime.now()
+    espdiff = float(globals.localtime_diff_value.get())
+    espnow = pcnow + datetime.timedelta(seconds=espdiff)
+    globals.localtime_value.set(espnow.strftime("%H:%M:%S"))
+    esputc = espnow.astimezone(datetime.timezone.utc)
+    utcval = esputc.strftime("%H:%M:%S")
+    #print(utcval)
+    globals.utctime_value.set(utcval)
 
-    if esp32go.connected() and not globals.commandQueue and not globals.blindCommandQueue: #preference is given to queued commands
-        esp32go.flush()
-        response = esp32go.sendCommandWaitReply(":Gx#",50)
-        if response == None or len(response) < 45:
-            #print(response)
-            #esp32go.flush()
-            threading.Timer(globals.polling_seconds, update_status).start()
-            return
-        #print(response)
-        pos=response[:2]+'h'+response[3:5]+'m'+response[6:10]+'s'
-        globals.ra_position.set(pos)
-
-        pos=response[11:14]+'º'+response[15:17]+'\''+response[18:20]+'"'
-        globals.dec_position.set(pos)
-
-        if globals.is_altAz.get()=='1':
-            pos=response[21:24]+'º'+response[25:27]+'\''+response[28:30]+'"'
-            globals.az_position.set(pos)
-            pos=response[31:34]+'º'+response[35:37]+'\''+response[38:40]+'"'
-
-            globals.alt_position.set(pos)
-        #else:
-        #    print("EQ only")
-
-            #globals.az_position.set(response[21:29])
-            #globals.alt_position.set(response[31:39])
+    esp32go.updateStatus()
 
 
-        # extended status
-        dresponse = esp32go.sendCommandWaitReply(":GU#")
-        if dresponse == None or len(dresponse) < 4:
-            #print(dresponse)
-            #esp32go.flush()
-            threading.Timer(globals.polling_seconds, update_status).start()
-            return
-        if dresponse[0]=='T':
-            globals.is_tracking.set(1)
-            #print('tracking')
-        else:
-            globals.is_tracking.set(0)
-        #print('not tracking')
-        if dresponse[1]=='P':
-            globals.is_parked.set(1)
-        else:
-            globals.is_parked.set(0)
-        if dresponse[2]=='S':
-            globals.is_slewing.set(1)
-        else:
-            globals.is_slewing.set(0)
-        if dresponse[3]=='W':
-            globals.pierSideWest.set(1)
-        else:
-            globals.pierSideWest.set(0)
-        #globals.track_value.set(dresponse[4]) 
-        match dresponse[4]: # set to valid alpaca values
-            case '1': # sideral
-                globals.track_value.set(0)
-            case '2': # solar
-                globals.track_value.set(2)
-            case '3': # lunar
-                globals.track_value.set(1)
-            case '4': # king
-                globals.track_value.set(3)
-            case _: 
-                globals.track_value.set(0)
-                
-        # update local/utc time values
-        pcnow = datetime.datetime.now()
-        espdiff = float(globals.localtime_diff_value.get())
-        espnow = pcnow + datetime.timedelta(seconds=espdiff)
-        globals.localtime_value.set(espnow.strftime("%H:%M:%S"))
-        esputc = espnow.astimezone(datetime.timezone.utc)
-        utcval = esputc.strftime("%H:%M:%S")
-        #print(utcval)
-        globals.utctime_value.set(utcval)
-                
-        # sidereal time
+            # sidereal time
         #longitude_value = float(globals.longitude.get())
         #rawvalue = globals.utctime_value.get()
         #gra = int(rawvalue[0:1])
@@ -373,11 +308,10 @@ def update_status():
         #lst = 100.46+(0.985647 * days_from2000)+ longitude_value + (15 * utc_value)
         #print(lst)
 
-                
-
 
     # schedule next execution
     threading.Timer(globals.polling_seconds, update_status).start()
+
 
 def create_main_window():
 

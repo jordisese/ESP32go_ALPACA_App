@@ -47,6 +47,7 @@ class TCPconnection(Thread):
         globals.connect_disconnect.set('Connect')
         globals.connect_status.set('Disconnected')
         globals.connected_status.set('')
+        globals.connect_picgotoLevel.set('')
         if self.clientsocket != None:
             self.clientsocket.shutdown(socket.SHUT_RDWR)
             self.clientsocket.close()
@@ -82,11 +83,15 @@ class TCPconnection(Thread):
             return
         if globals.comLock:
             return
+        self.clientsocket.settimeout(5)
         globals.comLock=True
+        key=next(iter(globals.commandQueue))
+        cmd = globals.commandQueue.pop(key)
+        maxbytes = globals.commandQueueBytes.pop(key,0)
+        captureTimeout = globals.commandCaptureTimeout.pop(key,False)
+        if captureTimeout:
+            self.clientsocket.settimeout(2) # smaller to get timeout faster
         try:
-            key=next(iter(globals.commandQueue))
-            cmd = globals.commandQueue.pop(key)
-            maxbytes = globals.commandQueueBytes.pop(key,0)
             #print('command['+cmd+']')
             if isinstance(cmd, (bytes, bytearray)):
                 self.clientsocket.send(cmd)
@@ -118,6 +123,10 @@ class TCPconnection(Thread):
             globals.responseQueue[key]=response
             globals.comLock=False
         except TimeoutError:
+            if captureTimeout:
+                globals.responseQueue[key]='TIMEOUT'
+                globals.comLock=False
+                return # do not close thread!
             print("Timeout processing commandQueue["+cmd+"]: disconnecting socket")
             self.thread_exit()
             raise            
@@ -135,11 +144,13 @@ class TCPconnection(Thread):
             return
         if globals.comLock:
             return
+        self.clientsocket.settimeout(5)
         try:
             globals.comLock=True
             cmd=globals.blindCommandQueue.pop(0)
             if cmd == 'FLUSH': #special command, empty buffer
-                self.clientsocket.send(b':Gc#')   
+                flushcmd = b':GG#' # all picgoto versions support this command 
+                self.clientsocket.send(flushcmd)   
                 time.sleep(0.1) 
                 self.clientsocket.recv(1024)
                 globals.comLock=False

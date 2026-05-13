@@ -1058,19 +1058,34 @@ class moveaxis:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
+            speed = abs(rate)
+            if speed > 0 and speed < 1:
+                speed = 4 #default: slew
+            if speed != 0:
+                print("rate["+str(rate)+"]")
+                match speed:
+                    case 1:
+                        esp32go.setMoveSpeed(0) #guide
+                    case 2:
+                        esp32go.setMoveSpeed(3) #center
+                    case 3:
+                        esp32go.setMoveSpeed(2) #find
+                    case 4:
+                        esp32go.setMoveSpeed(1) #slew
+
             if axis == 0:
                 if rate > 0:
-                    esp32go.move("E")
+                    esp32go.speed_move("E")
                 elif rate < 0:
-                    esp32go.move("W")
+                    esp32go.speed_move("W")
                 else: # rate == 0
                     esp32go.stop("E")
                     esp32go.stop("W")
             elif axis == 1:
                 if rate > 0:
-                    esp32go.move("N")
+                    esp32go.speed_move("N")
                 elif rate < 0:
-                    esp32go.move("S")
+                    esp32go.speed_move("S")
                 else: # rate == 0
                     esp32go.stop("N")
                     esp32go.stop("S")
@@ -1305,10 +1320,10 @@ class siteelevation:
         
         try:
             # ----------------------
-            #val = ## GET PROPERTY ##
+            val = 10 ## GET PROPERTY ##
             # ----------------------
-            #resp.text = PropertyResponse(val, req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = PropertyResponse(val, req).json
+            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Siteelevation failed', ex)).json
@@ -1331,8 +1346,8 @@ class siteelevation:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            resp.text = MethodResponse(req).json
+            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Siteelevation failed', ex)).json
@@ -1373,6 +1388,7 @@ class sitelatitude:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
+            esp32go.setLatitude(sitelatitude)
             resp.text = MethodResponse(req).json
             #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
@@ -1415,6 +1431,7 @@ class sitelongitude:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
+            esp32go.setLongitude(sitelongitude)
             resp.text = MethodResponse(req).json
             #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
@@ -1973,8 +1990,9 @@ class utcdate:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            #resp.text = MethodResponse(req).json
-            resp.text = MethodResponse(req, NotImplementedException()).json
+            esp32go.setUTCdate(utcdate)
+            resp.text = MethodResponse(req).json
+            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Utcdate failed', ex)).json

@@ -10,6 +10,11 @@ root = Tk()
 global comLock
 comLock = False
 
+global picGotoLevel # 0 = ESP32go full, 1 = ESP32go part, 2 = PicGoto 4b
+picGotoLevel = 0
+global connect_picgotoLevel
+connect_picgotoLevel = tk.StringVar() 
+
 global polling_seconds
 polling_seconds = 1
 
@@ -20,6 +25,8 @@ global commandQueue
 commandQueue={}
 global commandQueueBytes
 commandQueueBytes={}
+global commandCaptureTimeout
+commandCaptureTimeout={}
 global responseQueue
 responseQueue={}
 
@@ -40,6 +47,8 @@ global connected_status
 connected_status = tk.StringVar()
 global connect_status_font
 connect_status_font=font.Font(family='Helvetica', size=14, weight='normal')
+global connect_note_font
+connect_note_font=font.Font(family='Helvetica', size=12, weight='bold')
 global connection_error
 connection_error = False
 
