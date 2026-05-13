@@ -22,6 +22,9 @@ class esp32go_driver:
     def connect(self, blind=True):
         globals.connect_picgotoLevel.set('')
         self.tcp_connect(blind=blind)
+        if not self.connected():
+            return
+        
         print("picGotoLevel["+str(globals.picGotoLevel)+"]")
         match globals.picGotoLevel:
             case 2:
@@ -64,11 +67,14 @@ class esp32go_driver:
                 print(e.message)
             else:
                 print(e)
-
             if globals.connection_error == True:
                 globals.connection_error = False
                 if not blind:
                     messagebox.showerror("Error", "Connection failed")
+            globals.connect_disconnect.set('Connect')
+            globals.connect_status.set('Disconnected')
+            globals.connected_status.set('')
+            globals.connect_picgotoLevel.set('')
 
     def tcp_disconnect(self):
         globals.tcp_please_disconnect=True #thread will exit ASAP
@@ -589,7 +595,7 @@ class esp32go_driver:
             globals.track_value.set(0)        
             return
 
-        response = self.sendCommandWaitReply(":Gx#",50)
+        response = self.sendCommandWaitReply(":Gx#",55)
         if response == None or len(response) < 45:
             #print(response)
             #self.flush()
@@ -600,6 +606,9 @@ class esp32go_driver:
 
         pos=response[11:14]+'º'+response[15:17]+'\''+response[18:20]+'"'
         globals.dec_position.set(pos)
+
+        pos=response[43:-1]
+        globals.focus_position.set(pos)
 
         if globals.is_altAz.get()=='1':
             pos=response[21:24]+'º'+response[25:27]+'\''+response[28:30]+'"'
@@ -653,3 +662,28 @@ class esp32go_driver:
                 globals.track_value.set(3)
             case _: 
                 globals.track_value.set(0)
+
+
+    def focus_position(self):
+        return int(globals.focus_position.get())
+    
+    def focus_isMoving(self):
+        rawvalue = self.sendCommandWaitReply(":FB#")
+        if rawvalue[:-1]=='1':
+            return True
+        return False
+    
+    def focus_maxIncrement(self):
+        return 1000
+
+    def focus_maxStep(self):
+        return 250000
+    
+    def focus_stepSize(self):
+        return 1
+    
+    def focus_stop(self):
+        self.sendCommand(":FQ#")
+
+    def focus_move(self, position):
+        self. sendCommand("FA"+str(position)+"#")

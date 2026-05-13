@@ -86,9 +86,9 @@ from shr import set_shr_logger
 ##############################
 # FOR EACH ASCOM DEVICE TYPE #
 ##############################
+import focuser
 import telescope
 #import alpaca_empty_telescope as telescope
-#import focuser
 #import rotator
 
 #--------------
@@ -124,7 +124,7 @@ class AlpacaServer(Thread):
         # FOR EACH ASCOM DEVICE #
         #########################
         telescope.logger = logger
-        #focuser.logger = logger
+        focuser.logger = logger
         #rotator.logger = logger
 
         # -----------------------------
@@ -149,7 +149,7 @@ class AlpacaServer(Thread):
         # FOR EACH ASCOM DEVICE #
         #########################
         self.init_routes(self.falc_app, 'telescope', telescope)
-        #init_routes(falc_app, 'focuser', focuser)
+        self.init_routes(self.falc_app, 'focuser', focuser)
         #init_routes(falc_app, 'rotator', rotator)
         #
         # Initialize routes for Alpaca support endpoints
@@ -159,7 +159,7 @@ class AlpacaServer(Thread):
         self.falc_app.add_route('/setup', setup.svrsetup())
         #self.falc_app.add_route(f'/setup/v{API_VERSION}/rotator/{{devnum}}/setup', setup.devsetup())
         self.falc_app.add_route(f'/setup/v{API_VERSION}/telescope/{{devnum}}/setup', setup.devsetup())
-        #self.falc_app.add_route(f'/setup/v{API_VERSION}/focuser/{{devnum}}/setup', setup.devsetup())
+        self.falc_app.add_route(f'/setup/v{API_VERSION}/focuser/{{devnum}}/setup', setup.devsetup())
 
         #
         # Install the unhandled exception processor. See above,

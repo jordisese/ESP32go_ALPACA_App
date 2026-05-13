@@ -20,6 +20,12 @@ from exceptions import *        # Nothing but exception classes
 
 logger: Logger = None
 
+# ------------------------
+from esp32go_driver import esp32go_driver
+
+esp32go=esp32go_driver()
+# ------------------------
+
 # ----------------------
 # MULTI-INSTANCE SUPPORT
 # ----------------------
@@ -37,14 +43,14 @@ maxdev = 0                      # Single instance
 ## EDIT FOR YOUR DEVICE ##
 class FocuserMetadata:
     """ Metadata describing the Focuser Device. Edit for your device"""
-    Name = 'Sample Focuser'
-    Version = '##DRIVER VERSION AS STRING##'
-    Description = 'My ASCOM Focuser'
+    Name = 'ESP32go[Focus]'
+    Version = '1.0'
+    Description = 'ESP32go Focuser'
     DeviceType = 'Focuser'
-    DeviceID = '##GENERATE A NEW GUID AND PASTE HERE##' # https://guidgenerator.com/online-guid-generator.aspx
-    Info = 'Alpaca Sample Device\nImplements IFocuser\nASCOM Initiative'
+    DeviceID = 'be2746cc-e462-4679-986f-5d259086c90b' # https://guidgenerator.com/online-guid-generator.aspx
+    Info = 'Alpaca Focuser Device\nImplements IFocuser\nASCOM Initiative'
     MaxDeviceNumber = maxdev
-    InterfaceVersion = ##YOUR DEVICE INTERFACE VERSION##        # IFocuserVxxx
+    InterfaceVersion = 3 ##YOUR DEVICE INTERFACE VERSION##        # IFocuserVxxx
 
 
 # --------------------
@@ -78,6 +84,7 @@ class connect:
             # ------------------------
             ### CONNECT THE DEVICE ###
             # ------------------------
+            esp32go.connect()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -88,7 +95,7 @@ class connected:
     def on_get(self, req: Request, resp: Response, devnum: int):
         try:
             # -------------------------------------
-            is_conn = ### READ CONN STATE ###
+            is_conn = esp32go.connected() ### READ CONN STATE ###
             # -------------------------------------
             resp.text = PropertyResponse(is_conn, req).json
         except Exception as ex:
@@ -102,6 +109,7 @@ class connected:
             # --------------------------------------
             ### CONNECT OR DISCONNECT THE DEVICE ###
             # --------------------------------------
+            esp32go.connect_disconnect(conn) # connect or disconnect
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req, # Put is actually like a method :-(
@@ -112,7 +120,7 @@ class connecting:
     def on_get(self, req: Request, resp: Response, devnum: int):
         try:
             # ------------------------------
-            val = ## GET CONNECTING STATE ##
+            val = False ## GET CONNECTING STATE ##
             # ------------------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -128,7 +136,7 @@ class description:
 class devicestate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -150,6 +158,7 @@ class disconnect:
             # ---------------------------
             ### DISCONNECT THE DEVICE ###
             # ---------------------------
+            esp32go.disconnect()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -184,14 +193,14 @@ class supportedactions:
 class absolute:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = True ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -202,14 +211,14 @@ class absolute:
 class ismoving:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = esp32go.focus_isMoving() ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -220,14 +229,14 @@ class ismoving:
 class maxincrement:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = esp32go.focus_maxIncrement() ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -238,14 +247,14 @@ class maxincrement:
 class maxstep:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = esp32go.focus_maxStep() ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -256,14 +265,14 @@ class maxstep:
 class position:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = esp32go.focus_position() ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -274,14 +283,14 @@ class position:
 class stepsize:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = esp32go.focus_stepSize() ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -292,22 +301,23 @@ class stepsize:
 class tempcomp:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            #val = False ## GET PROPERTY ##
             # ----------------------
-            resp.text = PropertyResponse(val, req).json
+            #resp.text = PropertyResponse(val, req).json
+            resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Focuser.Tempcomp failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -324,7 +334,8 @@ class tempcomp:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
-            resp.text = MethodResponse(req).json
+            #resp.text = MethodResponse(req).json
+            resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Focuser.Tempcomp failed', ex)).json
@@ -333,14 +344,14 @@ class tempcomp:
 class tempcompavailable:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = False ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -351,16 +362,17 @@ class tempcompavailable:
 class temperature:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            #val = ## GET PROPERTY ##
             # ----------------------
-            resp.text = PropertyResponse(val, req).json
+            #resp.text = PropertyResponse(val, req).json
+            resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Focuser.Temperature failed', ex)).json
@@ -369,7 +381,7 @@ class temperature:
 class halt:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -378,6 +390,7 @@ class halt:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
+            esp32go.focus_stop()
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -387,7 +400,7 @@ class halt:
 class move:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not esp32go.connected(): ##IS DEV CONNECTED##:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -404,6 +417,7 @@ class move:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
             # -----------------------------
+            esp32go.focus_move(position)
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,

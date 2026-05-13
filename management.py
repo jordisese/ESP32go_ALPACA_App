@@ -88,12 +88,18 @@ class configureddevices():
 #            'DeviceType'    : RotatorMetadata.DeviceType,
 #            'DeviceNumber'  : 0,
 #            'UniqueID'      : RotatorMetadata.DeviceID
-#            }
+#            },
             {
             'DeviceName'    : 'ESP32go',
             'DeviceType'    : 'telescope',
             'DeviceNumber'  : 0,
             'UniqueID'      : '666'
+            },
+            {
+            'DeviceName'    : 'ESP32go[Focus]',
+            'DeviceType'    : 'focuser',
+            'DeviceNumber'  : 0,
+            'UniqueID'      : '696'
             }
         ]
         resp.text = PropertyResponse(confarray, req).json

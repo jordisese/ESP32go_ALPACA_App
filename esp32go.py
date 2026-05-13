@@ -284,6 +284,12 @@ def fire_alpaca_server():
 
 def update_status():
 
+    if not esp32go.connected():
+        time.sleep(.1)
+        # schedule next execution
+        threading.Timer(globals.polling_seconds, update_status).start()
+        return
+
      # update local/utc time values
     pcnow = datetime.datetime.now()
     espdiff = float(globals.localtime_diff_value.get())

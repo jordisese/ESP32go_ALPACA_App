@@ -147,3 +147,6 @@ global localtime_diff_value
 localtime_diff_value=tk.StringVar()
 
 #----------------
+
+global focus_position
+focus_position=tk.StringVar()

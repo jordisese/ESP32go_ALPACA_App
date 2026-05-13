@@ -30,4 +30,4 @@ sync_write_connected = true
 log_level = "INFO"
 log_to_stdout = false
 max_size_mb = 5
-num_keep_logs = 10
+num_keep_logs = 5
