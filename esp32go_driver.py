@@ -141,7 +141,7 @@ class esp32go_driver:
 
     #--- commands
     def setMoveSpeed(self,rate:int):
-        print("setMoveSpeed["+str(rate)+"]")
+        #print("setMoveSpeed["+str(rate)+"]")
         rate = abs(int(rate))
         if rate > 3:
             rate = 3
@@ -325,7 +325,7 @@ class esp32go_driver:
     # ---- SET / GOTO / SLEW
 
     def setUTCdate(self, utcdate):
-        print("setUTCdate["+str(utcdate)+"]")
+        #print("setUTCdate["+str(utcdate)+"]")
         utcdiff=int(globals.utcdiff_value.get())
         dateobj = datetime.datetime.strptime(utcdate[:19],'%Y-%m-%dT%H:%M:%S')
         #dateobj=dateobj.replace(tzinfo=datetime.timezone.utc)
@@ -335,7 +335,7 @@ class esp32go_driver:
         self.syncLocalDateTime()
 
     def setTargetDec(self, declination):
-        print("setTargetDec["+str(declination)+"]")
+        #print("setTargetDec["+str(declination)+"]")
         x = declination * 3600;
         c = '+'
         if x < 0:
@@ -347,11 +347,11 @@ class esp32go_driver:
         sec = int(temp % 60)
         cmd = ':Sd'+c+str(gra).zfill(2)+'*'+str(mins).zfill(2)+':'+str(sec).zfill(2)+'#'
 #sprintf(message, ":Sd%c%02d*%02d:%02d#", c, gra, min, sec);
-        print(cmd)
+        #print(cmd)
         self.sendCommand(cmd)
             
     def setTargetRa(self, rightascension):
-        print("setTargetRa["+str(rightascension)+"]")
+        #print("setTargetRa["+str(rightascension)+"]")
         
         seconds = rightascension * 3600 * 15
         x = math.trunc(seconds)/ 15.0
@@ -365,7 +365,7 @@ class esp32go_driver:
         sec = int(temp % 60)
         cmd = ':Sr'+str(gra).zfill(2)+':'+str(mins).zfill(2)+':'+str(sec).zfill(2)+'.'+str(rest)+'#'
 
-        print(cmd)
+        #print(cmd)
         self.sendCommand(cmd)
             
     def slewToTarget(self):
@@ -677,7 +677,7 @@ class esp32go_driver:
         return 1000
 
     def focus_maxStep(self):
-        return 250000
+        return 100000
     
     def focus_stepSize(self):
         return 1
@@ -686,4 +686,6 @@ class esp32go_driver:
         self.sendCommand(":FQ#")
 
     def focus_move(self, position):
-        self. sendCommand("FA"+str(position)+"#")
+        position = f"{position:05.0f}"
+        #print("focus_move["+position+"]")
+        self. sendCommand(":FA+"+position+"#")
