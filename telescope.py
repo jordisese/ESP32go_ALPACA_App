@@ -545,7 +545,7 @@ class cansetpark:
         try:
             # ----------------------
             # --- SI NO ESTA A -TRUE- NINA NO HACE SYNC!!!!!
-            val = True ## GET PROPERTY ##
+            val = False # True ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1018,9 +1018,10 @@ class ispulseguiding:
         
         try:
             # ----------------------
-            val = False ## GET PROPERTY ##
+            val = esp32go.isPulseguiding() ## GET PROPERTY ##
             # ----------------------
             resp.text = PropertyResponse(val, req).json
+            #resp.text = MethodResponse(req, NotImplementedException()).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Ispulseguiding failed', ex)).json

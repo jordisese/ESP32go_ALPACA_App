@@ -10,10 +10,12 @@ from tcpsocket import TCPconnection
 import datetime
 import time
 import math
+import threading
 
 class esp32go_driver:
 
     _TCP = None
+    is_guiding = {'n':False, 's':False, 'e':False, 'w':False}
 
     #--- is connected ?
     def connected(self):
@@ -190,8 +192,16 @@ class esp32go_driver:
     def resetHome(self):
         self.sendCommand(cmd=":pH#")
 
+    def unset_is_guiding(self,direction):
+        self.is_guiding[direction]=False
+
     def pulseguide(self,direction,interval):
+        self.is_guiding[direction] = True
         self.sendCommand(cmd=":Mg"+direction+str(interval)+"#")
+        threading.Timer(interval/1000, self.unset_is_guiding, [direction]).start() 
+    
+    def isPulseguiding(self):
+        return self.is_guiding['n'] or self.is_guiding['s'] or self.is_guiding['e'] or self.is_guiding['w']
 
     def setTrackingRate(self,rate:int): #rate is alpaca value
         if globals.picGotoLevel > 0: # not supported in older FW versions
